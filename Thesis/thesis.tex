@@ -36,17 +36,19 @@ headsep=10mm, footskip=12mm}
 \maketitle
 
 \begin{abstract}
-	Abstract...
+	Due to the increasing size of graphs and the associated memory requirements, the topic of graph compression is becoming more and more important. In this paper a coding for planar graphs is presented. These are converted into triangulated graphs and the set of edges is divided into three subsets so that each set is a tree. These are converted into parentheses and then combined. It is possible to store all information extremely compacted.
 \end{abstract}
 
 
 \section{Introduction}\label{sec:introduction}
+This article describes the paper "Succinct Representation of Labeled Graphs"~\cite{SuccinctRepresentation} by Jérémy Barbay. This is a compression process for triangulated graphs. Graphs are an important data structures for computer science and are mainly used for linking elements.
+
 
 \subsection{Motivation}
 
-\subsection{Fundamentals}
 
-\subsection{Header}
+There are many applications where data is stored in the form of data and fast requests have to be possible. In this case an efficient storage is crucial to make this possible. In this approach we consider planar graphs as a subclass of graphs. Planar graphs are graphs that can be displayed on a two-dimensional surface in such a way that none of the edges overlaps with another edge. A use case here is the simplified road network. If there were no bridges or tunnels, the road system could be represented as a planar graph, where each intersection is a node and the roads are the edges. In order to be able to save this use case efficiently, we present here the approach of Jérémy Barbay~\cite{SuccinctRepresentation}.
+
 
 
 
@@ -60,9 +62,8 @@ The goal is to encode a graph as efficiently as possible and to be able to proce
 
 
 \subsection{Graph Model}
-\todo{Änderung: Erst triangulated und anschließend als Erweiterung?}
 A graph $G=(V,E)$ consists of a set of nodes $V$ and a set of edges $E$. We consider undirected graphs so that the set of edges $E$ is undirected.
-The succint representation is constructed so that the coding only works for a subset of graphs, the undirected planar graph. A planar graph is a $G$ graph that can represent nodes in a two dimensional plane so that no edges intersect with another edge. For an example of a planar graph, see Figure~\ref{fig:planar}.
+The succinct representation is constructed so that the coding only works for a subset of graphs, the undirected planar graph. A planar graph is a  graph$G$ that can represent nodes in a two dimensional plane so that no edges intersect with another edge. For an example of a planar graph, see Figure~\ref{fig:planar}.
 
 
 \begin{figure}[h]
@@ -73,32 +74,27 @@ The succint representation is constructed so that the coding only works for a su
 \end{figure}
 
 
-In the first step, the planar graphs are converted to a triangulated planar graph.
-\todo{Explain how}
+In the first step, the planar graphs are converted to a triangulated planar graph. Each inner surface is supplemented by additional edges so that the surface becomes triangles. In this way, the entire graph can be transformed into triangular surfaces. 
+
+
 The graph from Figure~\ref{fig:planar} becomes a triangulated planar graph by the graph, see Figure~\ref{fig:triangulated}.
-\todo{Why always three vertices}
-Therefore it can be assumed that the graph always has three vertices which are adjacent to each other. These edges form the convex envelope of the graph, where we call the three nodes $v_0,v_1$ and $v_{n-1}$.
+Therefore it can be assumed that the graph always has three vertices which are adjacent to each other.
+
+
+For our coding, the triangulated graph must also have exactly three nodes on the convex hull. This can be created by adding the three new nodes and placing them in three corners so far out that edges between the new nodes lie outside the old nodes and edges. These nodes will be connected in pairs and added to the previous graph. During triangulation, the newly instantiated surfaces will also be triangulated.
+ These edges form the convex hull of the graph, where we call the three nodes $v_0,v_1$ and $v_{n-1}$.
 
 
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.4\textwidth]{img/triangulated}
-	\caption{The triangulated  graph from Figure~\ref{fig:planar}}
+	\caption{The triangulated  graph from Figure~\ref{fig:triangulated}}
 	\label{fig:triangulated}
 \end{figure}
-\todo{Explain complexity for space/time}
 
 \subsection{Schnyder realizer}
-The graph is divided into three trees for further compression. For this a Schnyder realizer~\cite{schnyder} is used. This divides the graph into three trees $T_0,T_1,T_2$. Each inner edge is assigned to one of the three trees. These are assigned so that each inner node has three outgoing edges, where each outgoing edge contains a different tree. \todo{Explain: Why directed} In addition, the node can have incoming edges, where these must be arranged in a certain way. In Figure~\ref{fig:schnyderRealizer} we see the arrangement. The edges are arranged according to the pattern outgoing $T_0$, incoming $T_1$, outgoing $T_2$, incoming $T_0$, outgoing $T_1$, incoming $T_2$. The trees $T_0,T_1,T_2$ have as root the node $v_0,v_1,v_{n-1}$.
-Thus the graph, see Figure~\ref{fig:example}, is divided into three trees, see Figure~\ref{exampleSchnyder}.\todo{Vlt explain in more detail how the construction is made}.
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{img/schnyderRealizer}
-	\caption{Structure of the edges for an internal node in the graph. }
-	\label{fig:schnyderrealizer}
-\end{figure}
-
+The graph is divided into three trees for further compression. For this a Schnyder realizer~\cite{schnyder} is used. This divides the graph into three trees $T_0,T_1,T_2$. Each inner edge is assigned to one of the three trees. These are assigned so that each inner node has three outgoing edges, where each outgoing edge contains to a different tree. In addition, the node can have incoming edges, where these must be arranged in a certain way. In Figure~\ref{fig:schnyderRealizer} we see the arrangement. The edges are arranged according to the pattern outgoing $T_0$, incoming $T_1$, outgoing $T_2$, incoming $T_0$, outgoing $T_1$, incoming $T_2$. The trees $T_0,T_1,T_2$ have as root the node $v_0,v_1,v_{n-1}$.
 
 
 \begin{figure}[h]
@@ -107,14 +103,13 @@ Thus the graph, see Figure~\ref{fig:example}, is divided into three trees, see F
 	\caption{The trees in the graph which are formed on the basis of the Schnyder realizer}
 	\label{fig:exampleSchnyder}
 \end{figure}
-\todo{Change to directed edges}
 
 
 \subsection{Traversal Orders}
-The graph is divided into three subtrees using a Schnyder realizer, but the edges lying on the convex hull of the graph are not yet contained in the trees. In addition we have to number the nodes for the following brackets. \todo{why are the other traversal orders needed}
+The graph is divided into three subtrees using a Schnyder realizer, but the edges lying on the convex hull of the graph are not yet contained in the trees. In addition we have to number the nodes for the following brackets.
 The two edges $(v_1,v_0),(v_{n-1},v_0)$, which lie on the convex hull, are assigned to the tree $T_0$ and the edge $(v_{n-1},v_1)$ is assigned to the tree $T_1$. So $T_0$ is an canonical spanning tree.
 
-To number the nodes in $T_0$ a depth search in the node $v_0$ is executed counterclockwise and the visiting nodes are numbered ascending, see Figure~\ref{fig:exampleTraversal}.
+To number the nodes in $T_0$ a depth search in the node $v_0$ is executed counterclockwise and the visited nodes are ascending ordered, see Figure~\ref{fig:exampleTraversal}.
 
 \begin{figure}[h]
 	\centering
@@ -136,13 +131,14 @@ For all nodes $v$ of depth i applies:
 
 
 \begin{equation}
- i&=0 \rightarrow \text{pair of parenthesis}\\
- 
-i&>0 \rightarrow \text{insert pair of parenthesis in } parent(v)
+\begin{split}
+ i & =0 \rightarrow \text{pair of parenthesis}\\
+i & >0 \rightarrow \text{insert pair of parenthesis in } parent(v)
+\end{split}
 \end{equation}
-\todo{Geordnet}
 
-Figure~\ref{fig:parenthesisOne} zeigt wie eine solche Klammerdarstellung für den Baum $T_0$ anhand unseres Beispiel aussieht.
+Figure~\ref{fig:parenthesisOne} shows how such a parenthesis for the tree $T_0$ looks like with our example.
+
 
 \begin{figure}[h]
 	\centering
@@ -155,7 +151,7 @@ Figure~\ref{fig:parenthesisOne} zeigt wie eine solche Klammerdarstellung für de
 
 
 
-For the tree $T_1$ the parenthesis representation is generated differently. A pair of parenthesis is created for each child of the root $v_1$, but the pairs of parenthesis are not written one after the other on the same level, but nested together. Here the edges are passed counterclockwise again, so that the child $a$, which is visited first, is on the outside and the other children are written into the brace pair of $a$. If a node has $v$ children, the children are also nested into each other and packed in the place of the parenthesis, which comes directly after the closing parenthesis of $a$.\todo{example}. The parenthesis for the tree $T_1$ from our example is shown in Figure~\ref{fig:parenthesisTwo}.
+For the tree $T_1$ the parenthesis representation is generated differently. A pair of parenthesis is created for each child of the root $v_1$, but the pairs of parenthesis are not written one after the other on the same level, but nested together. Here the edges are passed counterclockwise again, so that the child $a$, which is visited first, is on the outside and the other children are written into the brace pair of $a$. If a node has $v$ children, the children are also nested into each other and packed in the place of the parenthesis, which comes directly after the closing parenthesis of $a$. The parenthesis for the tree $T_1$ from our example is shown in Figure~\ref{fig:parenthesisTwo}.
 
 
 \begin{figure}[h]
@@ -166,10 +162,15 @@ For the tree $T_1$ the parenthesis representation is generated differently. A pa
 \end{figure}
 
 
-The parenthesis for the tree $T_2$ is created similar to the parenthesis for $T_1$. Again the children are nested again, but the children are passed clockwise. If a node has $v$ children, these nested children are now written in front of the opening parenthesis of $v$. This procedure is illustrated by the example in Figure~\ref{fig:parenthesisTrees}c).\todo{add graphic}
+The parenthesis for the tree $T_2$ is created similar to the parenthesis for $T_1$. The children are nested again, but the children are passed clockwise. If a node $v$ has  children, these nested children are now written in front of the opening parenthesis of $v$. This procedure is illustrated by the example in Figure~\ref{fig:parenthesisThree}.
 
 
-
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\textwidth]{img/parenthesisThree}
+	\caption{The parenthesis of the  tree $T_2$}
+	\label{fig:parenthesisThree}
+\end{figure}
 
 The three parenthesis must now be combined so that no information about the graph is lost. The parenthesis of a tree $T_i$ is called $S_i$. In order to be able to distinguish the parts of the different parenthesis according to the combination, we use different parenthesis symbols for each parenthesis. The parenthesis $S_0$ serves as the basic structure. The other two parenthesis are included in this. The parenthesis are created as follows.
 
@@ -189,25 +190,18 @@ This creates a parenthesis that contains three types of parenthesis, each parent
 	\label{fig:parenthesisCombi}
 \end{figure}
 
-\subsection{Querys}
+\subsection{Query}
+The coded data structure also supports efficient queries. An overhead of $o(m)$ bits was accepted to implement some queries without sacrificing performance. Among the supported queries are the adjacency query of a node as well as on the degree of a node. These and other queries are supported with $O(1)$ time requirements. 
 
 \subsection{Size complexity}
-
-\todo{Modify later, propaly not completly correct}
-The parenthesis representation consists of three different types of parenthesis, whereby 2 symbols are required for each type (opening and closing parenthesis). This means that a total of 6 different characters are required. Each edge of the graph is coded exactly once and one opening and one closing bracket are required per edge. Nodes do not have to be encoded separately, since the information indirectly contains the edges. Thus $2m$ symbols are needed for the representation, at m the number of edges is in G.
-
-
-\subsection{Reconstruction of the graph}
-
-\section{Extensions}
-
-node/edge labels\\\\
-k-page Graphs
+The parenthesis representation consists of three different types of parenthesis, whereby 2 symbols are required for each type (opening and closing parenthesis). This means that a total of 6 different characters are required. Each edge of the graph is coded exactly once and one opening and one closing bracket are required per edge. Nodes do not have to be encoded separately, since the information indirectly contains the edges. Thus $2m$ symbols are needed for the representation, at m the number of edges is in G. Since we need a total of 6 different symbols, three times each the opening and closing parenthesis, $\lceil log_2 6\rceil=3$ bits are sufficient. In total we need $2m\lceil log_2 6\rceil+o(m)$ bits, where $o(m)$ is an overhead to make the queries more efficient. 
 
 
 \section{Conclusion \& Future Work}
+In this paper we have presented an approach to efficiently store planar graphs and still enable efficient queries. Therefore the planar graph is converted into a triangulated graph. This graph is then divided into three trees using the Schynder realizer. These can then be converted to parentheses with a special construction, which is then combined to form a complete parenthesis. From this all information of the graph can be retrieved and for many queries even lost without performance.
 
 
+Furthermore, it should be investigated which practical examples of planar graphs exist in the economy where coding could be used. Furthermore, the paper reports about an extension to k-Page graphs and should be investigated, which graphs can be converted to k-Page graphs and if this can increase the number of applications significantly.
 
 \pagebreak
 
